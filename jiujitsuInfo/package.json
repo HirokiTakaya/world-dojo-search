@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "@tsparticles/engine": "^3.6.0",
+    "@tsparticles/react": "^3.0.0",
+    "@types/axios": "^0.9.36",
+    "axios": "^1.7.7"
+  }
+}
