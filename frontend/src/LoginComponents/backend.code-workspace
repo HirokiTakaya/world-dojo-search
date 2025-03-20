@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "../../../../backend"
+		},
+		{
+			"path": "../../../../dojo-frontend"
+		},
+		{
+			"path": "../.."
+		}
+	],
+	"settings": {}
+}
