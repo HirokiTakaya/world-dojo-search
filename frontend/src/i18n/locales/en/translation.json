@@ -1,4 +1,5 @@
 {
+  "defaultResponse": "I'm sorry, I didn't understand that. Could you please rephrase?",
   "favoritesList": "Favorites List",
   "noFavorites": "You have no favorites.",
   "deleteConfirmation": "Delete Confirmation",

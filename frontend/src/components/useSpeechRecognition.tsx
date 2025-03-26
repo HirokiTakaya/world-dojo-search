@@ -1,3 +1,4 @@
+// useSpeechRecognition.ts
 import { useEffect, useState, useRef } from 'react';
 
 // 型定義（簡易的なもの）
@@ -41,12 +42,26 @@ const useSpeechRecognition = (
   const recognitionRef = useRef<ISpeechRecognition | null>(null);
 
   useEffect(() => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    // ① HTTPS または localhost でない場合はエラーを表示して中断
+    if (
+      typeof window !== "undefined" &&
+      window.location.protocol !== "https:" &&
+      window.location.hostname !== "localhost"
+    ) {
+      setError("音声認識にはHTTPS接続が必要です。（localhost は例外）");
+      setIsSupported(false);
+      return;
+    }
+
+    // ブラウザが SpeechRecognition をサポートしているか確認
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
       setError("このブラウザは音声認識に対応していません。");
       setIsSupported(false);
       return;
     }
+
     const recognition = new SpeechRecognition();
     recognition.lang = lang;
     recognition.interimResults = false;
@@ -74,22 +89,28 @@ const useSpeechRecognition = (
     recognitionRef.current = recognition;
   }, [lang, onResult]);
 
+  // 音声認識開始
   const startListening = () => {
+    // エラーをリセット
     setError(null);
-    if (recognitionRef.current && !isListening) {
+    // isSupported が true かつ現在リスニングしていない場合のみ開始
+    if (recognitionRef.current && !isListening && isSupported) {
       try {
         recognitionRef.current.start();
       } catch (e) {
+        console.error(e);
         setError("音声認識の開始に失敗しました。");
       }
     }
   };
 
+  // 音声認識停止
   const stopListening = () => {
     if (recognitionRef.current && isListening) {
       try {
         recognitionRef.current.stop();
       } catch (e) {
+        console.error(e);
         setError("音声認識の停止に失敗しました。");
       }
     }

@@ -11,7 +11,47 @@ import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 
-// 削除確認モーダル用のコンテナも styled-components で定義
+/* 
+  PracticeCalendar と同様に、コンテナを styled-components で定義し、
+  - レスポンシブな max-width
+  - 上下余白 (margin-top)
+  - Tailwind のユーティリティ @apply
+*/
+const FavoritesContainer = styled.div`
+  /* 1) Tailwindユーティリティでデザイン（背景・角丸等） */
+  @apply
+    bg-white/80
+    backdrop-blur-sm
+    rounded-lg
+    shadow-md
+    flex
+    flex-col
+    px-4
+    py-6
+    sm:p-6
+    w-full
+    mx-auto;
+
+  /* 2) レスポンシブ幅 (max-width) を段階的に定義 */
+  @apply max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl;
+
+  /* 3) 上下の余白を画面幅に応じて増やす */
+  margin-top: 11rem; /* モバイル: 64px */
+  @media (min-width: 640px) {
+    margin-top: 6rem; /* 640px以上: 96px */
+  }
+  @media (min-width: 768px) {
+    margin-top: 8rem; /* 768px以上: 128px */
+  }
+  @media (min-width: 1024px) {
+    margin-top: 10rem; /* 1024px以上: 160px */
+  }
+`;
+
+const Title = styled.h2`
+  @apply text-xl sm:text-2xl md:text-3xl font-bold text-center mb-4 text-gray-800;
+`;
+
 const ModalContainer = styled.div`
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(6px);
@@ -76,7 +116,11 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
   );
 };
 
-const FavoritesList: React.FC<{ accessToken?: string | null }> = ({ accessToken }) => {
+interface FavoritesListProps {
+  accessToken?: string | null;
+}
+
+const FavoritesList: React.FC<FavoritesListProps> = ({ accessToken }) => {
   const { t } = useTranslation();
   const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [loading, setLoading] = useState(false);
@@ -88,11 +132,17 @@ const FavoritesList: React.FC<{ accessToken?: string | null }> = ({ accessToken 
   const [targetFavoriteId, setTargetFavoriteId] = useState<number | null>(null);
   const [targetName, setTargetName] = useState<string | null>(null);
 
-  const fetchFavorites = useCallback(async () => {
+  // データ取得ロジック
+  const fetchFavorites = React.useCallback(async () => {
+    if (!accessToken) {
+      setError(t("errorFetchingFavorites", "Login required."));
+      return;
+    }
     setLoading(true);
     setError(null);
+
     try {
-      const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
+      const headers = { Authorization: `Bearer ${accessToken}` };
       const response = await api.get<Favorite[]>("/favorites/", { headers });
       setFavorites(response.data);
     } catch (err: unknown) {
@@ -145,9 +195,11 @@ const FavoritesList: React.FC<{ accessToken?: string | null }> = ({ accessToken 
   };
 
   const handleConfirmDelete = async () => {
-    if (!targetFavoriteId) return;
+    if (!targetFavoriteId || !accessToken) return;
     try {
-      await api.delete(`/favorites/${targetFavoriteId}/`);
+      await api.delete(`/favorites/${targetFavoriteId}/`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
       toast.success(t("favoriteRemoved"));
       fetchFavorites();
     } catch (err: unknown) {
@@ -163,10 +215,8 @@ const FavoritesList: React.FC<{ accessToken?: string | null }> = ({ accessToken 
   };
 
   return (
-    <div className="bg-white/80 backdrop-blur-sm rounded-lg p-6 max-w-3xl w-full mx-auto mt-8 shadow-lg">
-      <h2 className="text-2xl font-bold text-center mb-4 text-gray-800">
-        {t("favoritesList")}
-      </h2>
+    <FavoritesContainer>
+      <Title>{t("favoritesList")}</Title>
 
       {loading ? (
         <LoadingAnimation />
@@ -178,48 +228,58 @@ const FavoritesList: React.FC<{ accessToken?: string | null }> = ({ accessToken 
             {favorites.map((fav) => (
               <li
                 key={fav.id}
-                className="bg-white shadow rounded p-4 hover:bg-gray-50 transition"
+                className="bg-white shadow rounded p-3 hover:bg-gray-50 transition"
               >
-                <h3 className="text-lg font-semibold text-gray-700 mb-1">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-700 mb-1">
                   {fav.dojo.name}
                 </h3>
-                <p className="text-sm text-gray-500 mb-2">{fav.dojo.address}</p>
+                <p className="text-xs sm:text-sm text-gray-500 mb-2">
+                  {fav.dojo.address}
+                </p>
                 <div className="flex flex-col sm:flex-row gap-2 mb-2">
                   {fav.dojo.website ? (
                     <a
                       href={fav.dojo.website}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline"
+                      className="text-blue-600 hover:underline text-sm"
                     >
                       {t("website")}
                     </a>
                   ) : (
-                    <span className="text-gray-400">N/A</span>
+                    <span className="text-gray-400 text-sm">N/A</span>
                   )}
                   {fav.dojo.instagram ? (
                     <a
                       href={fav.dojo.instagram}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-pink-600 hover:underline"
+                      className="text-pink-600 hover:underline text-sm"
                     >
                       {t("instagram")}
                     </a>
                   ) : (
-                    <span className="text-gray-400">N/A</span>
+                    <span className="text-gray-400 text-sm">N/A</span>
                   )}
                 </div>
                 <div className="flex gap-2 flex-col sm:flex-row">
                   <button
                     onClick={() => openModal(fav.dojo)}
-                    className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition w-full sm:w-auto"
+                    className="
+                      bg-blue-500 text-white text-sm px-2 py-1 rounded
+                      hover:bg-blue-600 transition
+                      w-full sm:w-auto
+                    "
                   >
                     {t("details")}
                   </button>
                   <button
                     onClick={() => openConfirmModal(fav.id, fav.dojo.name)}
-                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition w-full sm:w-auto"
+                    className="
+                      bg-red-500 text-white text-sm px-2 py-1 rounded
+                      hover:bg-red-600 transition
+                      w-full sm:w-auto
+                    "
                   >
                     {t("deleteButton")}
                   </button>
@@ -229,7 +289,9 @@ const FavoritesList: React.FC<{ accessToken?: string | null }> = ({ accessToken 
           </ul>
         </div>
       ) : (
-        <p className="text-center text-gray-600 mt-6">{t("noFavorites")}</p>
+        <p className="text-center text-gray-600 mt-6 text-sm">
+          {t("noFavorites")}
+        </p>
       )}
 
       {selectedDojo && (
@@ -246,7 +308,7 @@ const FavoritesList: React.FC<{ accessToken?: string | null }> = ({ accessToken 
         onConfirm={handleConfirmDelete}
         targetName={targetName || undefined}
       />
-    </div>
+    </FavoritesContainer>
   );
 };
 

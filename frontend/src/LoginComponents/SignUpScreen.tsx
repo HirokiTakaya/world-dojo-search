@@ -24,6 +24,7 @@ const PageWrapper = styled.div`
 
 /* 背面の固定画像 */
 const BackgroundImage = styled.img`
+
  position: fixed;
   bottom:44%;
   left: 50%;
@@ -38,8 +39,9 @@ const BackgroundImage = styled.img`
 
    /* モバイル用にロゴ縮小 */
    @media (max-width: 768px) {
-    bottom:18%;
-       max-width: 370px;
+   display:none;
+     bottom:25%;
+       max-width: 180px;
        
      
    }

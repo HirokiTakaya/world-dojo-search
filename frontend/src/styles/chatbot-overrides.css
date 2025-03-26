@@ -1,52 +1,200 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* chatbot-overrides.css */
 
-@layer components {
-  .react-chatbot-kit-chat-container {
-    @apply flex flex-col h-full w-full overflow-hidden;
+/* ========== 共通スタイル ========== */
+
+/* ルートコンテナ（位置とZ軸） */
+.chatbot-root-container {
+  
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+/* チャット起動ボタン */
+.chatbot-open-btn {
+  background-color: #1d4ed8;
+  color: #fff;
+  border: none;
+  border-radius: 9999px;
+  padding: 6px 12px; /* 少し小さめ */
+  cursor: pointer;
+  font-size: 14px;   /* ボタンの文字も少し小さく */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* チャットウィンドウ本体 */
+.chatbot-window {
+ 
+  margin-top: 8px;
+  width: 260px;       /* デフォルト幅をやや小さめに */
+  height: 60vh;       /* 高さをやや低めに */
+  max-width: calc(80vw - 32px); 
+  background-color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* チャットヘッダー */
+.chatbot-header {
+  background-color: #1d4ed8;
+  color: #fff;
+  padding: 6px; /* 少し小さく */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.chatbot-title {
+  font-weight: 600;
+  font-size: 13px; /* タイトル文字も小さめ */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 閉じるボタン */
+.chatbot-close-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 16px; /* ×ボタンはやや大きくてもOK */
+}
+
+/* 本体エリア */
+.chatbot-body {
+  
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ========== react-chatbot-kit 内部の上書き ========== */
+
+/* 全体チャットコンテナ */
+.react-chatbot-kit-chat-container {
+  padding-right:27px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* デフォルトのヘッダーを非表示 */
+.react-chatbot-kit-chat-header {
+  display: none !important;
+}
+
+/* 内部コンテナ */
+.react-chatbot-kit-chat-inner-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* メッセージ一覧 */
+.react-chatbot-kit-chat-message-container {
+  flex: 1;
+  padding: 6px; /* こちらも少し小さめ */
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+/* 入力欄 */
+.react-chatbot-kit-chat-input-container {
+  display: flex !important;
+  padding: 6px !important; /* 入力欄のパディングを小さく */
+  border-top: 1px solid #e5e7eb;
+  background-color: #fff;
+  box-sizing: border-box !important;
+}
+
+.react-chatbot-kit-chat-input-container input {
+  flex: 1;
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px; /* 入力欄の文字も小さく */
+}
+
+.react-chatbot-kit-chat-input-container button {
+margin-right:15px;
+  background-color: #1d4ed8;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  width: 36px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* チャット入力欄の紙飛行機アイコンを大きくする */
+.react-chatbot-kit-chat-input-container button svg {
+  transform: scale(1.8);
+
+  /* ↑お好みで 24 → 28 など値を変えてください */
+}
+
+
+/* スクロールバーの見た目 */
+.react-chatbot-kit-chat-message-container::-webkit-scrollbar {
+  width: 6px;
+}
+.react-chatbot-kit-chat-message-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+.react-chatbot-kit-chat-message-container::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+/* ========== レスポンシブ: 640px以下 (スマホ等) ========== */
+@media (max-width: 640px) {
+
+
+  .chatbot-window {
+    width: calc(90vw - 24px); /* 幅を画面の9割程度 */
+    height: 50vh;             /* 高さを50vhに */
   }
 
-  .react-chatbot-kit-chat-inner-container {
-    @apply flex-1 overflow-y-auto p-2 w-full box-border;
+  .chatbot-header {
+    padding: 4px;
   }
 
-  .react-chatbot-kit-chat-bot-message,
-  .react-chatbot-kit-user-chat-message {
-    @apply p-2 text-xs;
-    max-width: 70%;
-    word-break: break-word;
-    white-space: normal;
+  .chatbot-title {
+    font-size: 12px;
+  }
+
+  .chatbot-close-btn {
+    font-size: 14px;
+  }
+
+  .react-chatbot-kit-chat-message-container {
+    padding: 4px; /* より小さく */
   }
 
   .react-chatbot-kit-chat-input-container {
-    @apply flex items-center p-2 w-full box-border;
+    padding: 4px !important;
   }
 
-  /* 入力欄 */
   .react-chatbot-kit-chat-input-container input {
-    @apply flex-1 min-w-0 py-2 px-3 rounded-lg border border-gray-300;
-    height: 36px !important;
-    font-size: 0.875rem !important;
+    font-size: 12px;
+    padding: 4px;
   }
 
-  /* 投稿ボタン */
-  .react-chatbot-kit-chat-input-container button {
-    @apply flex-none bg-blue-500 hover:bg-blue-600 rounded-lg ml-2;
-    width: 36px !important;
-    height: 36px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 0 !important;
-    margin-left: 8px !important;
-  }
 
-  /* アイコンサイズ調整 */
-  .react-chatbot-kit-chat-input-container button svg,
-  .react-chatbot-kit-chat-input-container button img {
-    width: 18px !important;
-    height: 18px !important;
-  }
 }
-

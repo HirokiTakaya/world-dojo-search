@@ -1,4 +1,5 @@
 {
+  "defaultResponse": "申し訳ありませんが、その内容には対応できません。別の質問をしてください。",
   "favoritesList": "お気に入りリスト",
   "noFavorites": "お気に入りがありません。",
   "deleteConfirmation": "削除確認",

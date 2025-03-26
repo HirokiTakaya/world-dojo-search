@@ -1,30 +1,33 @@
 // src/chatbot/ActionProvider.ts
-import { createChatBotMessage } from "react-chatbot-kit";
+import i18next from "i18next";
 
 class ActionProvider {
-  createChatBotMessage: (text: string, options?: any) => any;
-  setState: (state: any) => void;
+  createChatBotMessage: (message: string) => any;
+  setState: any;
 
-  constructor(
-    createChatBotMessage: (text: string, options?: any) => any,
-    setState: (state: any) => void
-  ) {
+  constructor(createChatBotMessage: any, setStateFunc: any) {
     this.createChatBotMessage = createChatBotMessage;
-    this.setState = setState;
+    this.setState = setStateFunc;
   }
 
-  // FAQに基づく回答を返すメソッド
-  faqResponse(answer: string) {
-    const message = this.createChatBotMessage(answer, {});
-    this.setState((prev: any) => ({
-      ...prev,
-      messages: [...prev.messages, message],
-    }));
+  // FAQ一致時の応答を送信
+  sendFAQMessage(answer: string) {
+    const message = this.createChatBotMessage(answer);
+    this.updateChatbotState(message);
   }
 
-  // FAQにマッチしなかった場合のデフォルト回答
+  // FAQにマッチしなかったときのデフォルト応答
   defaultResponse() {
-    const message = this.createChatBotMessage("申し訳ありませんが、その質問にはお答えできません。", {});
+    const fallback = i18next.t(
+      "defaultResponse",
+      "申し訳ありませんが、その内容には対応できません。"
+    );
+    const message = this.createChatBotMessage(fallback);
+    this.updateChatbotState(message);
+  }
+
+  // ステートを更新（共通）
+  updateChatbotState(message: any) {
     this.setState((prev: any) => ({
       ...prev,
       messages: [...prev.messages, message],

@@ -1,578 +1,532 @@
-/* ======================================
-   グローバルスタイル（ダークテーマ）App.module.css
-   ====================================== */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-   @tailwind base;
-   @tailwind components;
-   @tailwind utilities;
-   
-   /* ここ以降、アプリ独自のグローバルスタイルを書く */
-   body {
-     @apply bg-gray-100;
-   }
-   
-   /* リセット & ベース設定 */
-   body, html {
-     margin: 0;
-     padding: 0;
-     height: 100%;
-     font-family: Arial, sans-serif;
-     background: linear-gradient(to bottom, #2c3e50, #34495e);
-     color: #ffffff;
-   
-     /* ページ全体をスクロール可能にするため overflow: hidden; を削除し、autoまたはscrollに */
-     /* overflow: hidden;  ← コメントアウト */
-     overflow: auto;
-   }
-   
-   #root {
-     height: 100%;
-     display: flex;
-     flex-direction: column;
-   }
-   
-   .appContainer {
-     position: relative;
-     flex: 1;
-     display: flex;
-     flex-direction: column;
-     padding: 20px;
-     background-color: rgba(0, 0, 0, 0.5);
-     box-sizing: border-box;
-   }
-   
-   /* ヘッダー */
-   .header {
-     display: flex;
-     justify-content: space-between;
-     align-items: center;
-     padding: 20px;
-     background-color: rgba(0, 0, 0, 0.85);
-     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
-     z-index: 100;
-   }
-   
-   .header .logo {
-     font-size: 1.5rem;
-     font-weight: bold;
-     color: #ffffff;
-     text-decoration: none;
-   }
-   
-   .header .buttonContainer {
-     display: flex;
-     gap: 10px;
-   }
-   
-   /* ======================================
-      共通ボタンスタイル
-      ====================================== */
-   button, .header .linkButton {
-     display: inline-block;
-     padding: 10px 15px;
-     font-size: 1rem;
-     color: #ffffff;
-     border: none;
-     border-radius: 4px;
-     cursor: pointer;
-     text-decoration: none;
-     text-align: center;
-     transition: background-color 0.3s ease, transform 0.2s ease;
-   }
-   
-   button:hover, .header .linkButton:hover {
-     transform: scale(1.05);
-   }
-   
-   button:focus, .header .linkButton:focus {
-     outline: none;
-     box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
-   }
-   
-   button:active, .header .linkButton:active {
-     transform: scale(0.95);
-   }
-   
-   .linkButton {
-     background-color: #007bff;
-   }
-   .linkButton:hover {
-     background-color: #0056b3;
-   }
-   
-   .logoutButton {
-     background-color: #dc3545;
-   }
-   .logoutButton:hover {
-     background-color: #c82333;
-   }
-   
-   /* ======================================
-      入力フィールド
-      ====================================== */
-   input {
-     background-color: #1f1f1f;
-     color: #ffffff;
-     border: 1px solid #333333;
-     padding: 10px;
-     border-radius: 4px;
-     margin-right: 10px;
-     min-width: 200px;
-     transition: box-shadow 0.3s ease;
-   }
-   
-   input:focus {
-     box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
-     outline: none;
-   }
-   
-   input::placeholder {
-     color: #aaaaaa;
-   }
-   
-   /* ======================================
-      MapやHome用のスタイル
-      ====================================== */
-   .mapContainer {
-     position: relative;
-     width: 100%;
-     height: auto;
-     /* ★ マップを前面に出すために z-index を高めに */
-     z-index: 10;
-   }
-   
-   /* Google マップのルート要素 (gm-style) も z-index を上げる */
-   .mapContainer .gm-style {
-     z-index: 10 !important;
-   }
-   
-   .map {
-     width: 100%;
-     height: 500px;
-   }
-   
-   .threeContainer {
-     width: 100%;
-     height: 400px;
-   }
-   
-   /* Home */
-   .homeContainer {
-     display: flex;
-     flex-direction: column;
-     align-items: center;
-     flex: 1;
-     width: 100%;
-   }
-   
-   .searchContainer {
-     display: flex;
-     gap: 10px;
-     margin-bottom: 20px;
-   }
-   
-   .searchInput {
-     padding: 10px;
-     font-size: 1rem;
-     width: 200px;
-     border: 1px solid #ccc;
-     border-radius: 4px;
-   }
-   
-   .searchButton {
-     background-color: #007bff;
-   }
-   .searchButton:hover {
-     background-color: #0056b3;
-   }
-   
-   /* エラーテキスト等 */
-   .errorText {
-     color: red;
-     margin-bottom: 10px;
-   }
-   .successText {
-     color: green;
-     margin-bottom: 10px;
-   }
-   
-   /* ローディングオーバーレイ */
-   .loadingOverlay {
-     position: fixed;
-     top: 0;
-     left: 0;
-     width: 100%;
-     height: 100%;
-     background-color: rgba(255, 255, 255, 0.8);
-     display: flex;
-     align-items: center;
-     justify-content: center;
-     z-index: 1000;
-   }
-   
-   .loadingContainer {
-     display: flex;
-     flex-direction: column;
-     align-items: center;
-     justify-content: center;
-     height: 100vh;
-     position: fixed;
-     top: 0;
-     left: 0;
-     width: 100%;
-     background-color: rgba(0, 0, 0, 0.7);
-     z-index: 1000;
-   }
-   
-   .spinner {
-     border: 8px solid #f3f3f3;
-     border-top: 8px solid #3498db;
-     border-radius: 50%;
-     width: 60px;
-     height: 60px;
-     animation: spin 2s linear infinite;
-     margin-bottom: 20px;
-   }
-   
-   @keyframes spin {
-     0% { transform: rotate(0deg); }
-     100% { transform: rotate(360deg); }
-   }
-   
-   .loadingText {
-     font-size: 1.5rem;
-     color: #ffffff;
-   }
-   
-   /* レスポンシブ対応 */
-   @media (max-width: 768px) {
-     .header {
-       flex-direction: column;
-       align-items: center;
-       padding: 10px;
-     }
-     .buttonContainer {
-       flex-direction: column;
-       gap: 5px;
-     }
-     input {
-       margin-right: 0;
-       width: 100%;
-     }
-     .searchContainer {
-       flex-direction: column;
-       align-items: stretch;
-       width: 100%;
-     }
-   }
-   /* ======================================
-      ReactModal Overlay (背景半透明)
-      ====================================== */
-   .ReactModal__Overlay {
-     background-color: rgba(0, 0, 0, 0.8) !important;
-     z-index: 9999 !important;
-     display: flex;
-     align-items: center;
-     justify-content: center;
-   }
-   
-   /* ======================================
-      ReactModal Content (モーダル本体)
-      ====================================== */
-   .reactModalContent {
-     position: relative;
-     background-color: #ffffff;
-     color: #000000;
-     border-radius: 8px;
-     padding: 10px;
-     max-width: 300px;
-     width: 80%;
-     margin: 150px auto 0 auto;
-     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-     font-family: Arial, sans-serif;
-     overflow-y: auto;
-     max-height: 80vh;
-   }
-   
-   /* タイトルなど */
-   .modalTitle {
-     margin-top: 0;
-     margin-bottom: 16px;
-     font-size: 1.5rem;
-     color: #333333;
-   }
-   
-   /* App.module.css (抜粋例) */
-   /* ここはFavoritesListなどのCSS、省略せず全て記載 */
-   .favoritesContainer {
-     padding: 20px;
-     max-width: 800px;
-     margin: 0 auto;
-     background-color: #f9f9f9;
-     border-radius: 6px;
-   }
-   
-   .favoritesTitle {
-     margin-bottom: 16px;
-     font-size: 1.5rem;
-     text-align: center;
-   }
-   
-   .noFavoritesText {
-     color: #666;
-     text-align: center;
-     margin-top: 20px;
-   }
-   
-   .favoritesListContainer {
-     max-height: 400px;
-     overflow-y: auto;
-     padding-right: 8px;
-     margin-bottom: 16px;
-   }
-   
-   .favoriteList {
-     list-style-type: none;
-     padding: 0;
-     margin: 0;
-   }
-   
-   .favoriteItem {
-     background: #fff;
-     margin-bottom: 12px;
-     padding: 12px;
-     border-radius: 4px;
-     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-     transition: background 0.2s;
-   }
-   
-   .favoriteItem:hover {
-     background: #f0f0f0;
-   }
-   
-   .favoriteDojoName {
-     font-size: 1.2rem;
-     margin: 0 0 4px 0;
-     color: #333;
-   }
-   
-   .favoriteDojoAddress {
-     margin: 0 0 8px 0;
-     color: #777;
-   }
-   
-   .favoriteLinks {
-     display: flex;
-     gap: 10px;
-     margin-bottom: 8px;
-   }
-   
-   .websiteLink,
-   .instagramLink {
-     color: #0066cc;
-     text-decoration: none;
-     transition: color 0.2s;
-   }
-   
-   .websiteLink:hover,
-   .instagramLink:hover {
-     color: #004999;
-   }
-   
-   .notAvailable {
-     color: #aaa;
-   }
-   
-   .buttonGroup {
-     display: flex;
-     gap: 10px;
-   }
-   
-   /* ボタン共通 */
-   .detailsButton,
-   .deleteButton {
-     border: none;
-     padding: 8px 16px;
-     cursor: pointer;
-     font-size: 0.9rem;
-     border-radius: 4px;
-     transition: background 0.2s, color 0.2s;
-   }
-   
-   .detailsButton {
-     background-color: #2196f3;
-     color: #fff;
-   }
-   .detailsButton:hover {
-     background-color: #1976d2;
-   }
-   
-   .deleteButton {
-     background-color: #f44336;
-     color: #fff;
-   }
-   .deleteButton:hover {
-     background-color: #d32f2f;
-   }
-   
-   /* 営業時間リスト */
-   .businessHours {
-     list-style-type: none;
-     padding: 0;
-     margin: 0;
-   }
-   
-   .businessHours li {
-     margin: 5px 0;
-     color: #000000;
-   }
-   
-   .instagram {
-     margin-top: 10px;
-     font-size: 1rem;
-     color: #333333;
-   }
-   .instagram a {
-     color: #007bff;
-     text-decoration: underline;
-   }
-   .instagram a:hover {
-     color: #0056b3;
-   }
-   
-   .businessHoursHeader {
-     margin-top: 20px;
-     margin-bottom: 10px;
-     font-size: 1.2rem;
-     color: #000000;
-     font-weight: bold;
-   }
-   
-   .businessHours {
-     list-style-type: disc;
-     margin-left: 20px;
-     color: #444444;
-   }
-   
-   /* 黒字テキスト用 */
-   .modalText {
-     font-size: 1rem;
-     color: #000000;
-     margin-bottom: 8px;
-   }
-   
-   .modalSubHeader {
-     font-size: 1.2rem;
-     font-weight: bold;
-     color: #000000;
-     margin-bottom: 10px;
-   }
-   
-   .favoriteList {
-     list-style: none;
-     padding: 0;
-   }
-   
-   .favoriteItem {
-     border: 1px solid #ccc;
-     padding: 16px;
-     margin-bottom: 8px;
-     border-radius: 4px;
-     display: flex;
-     flex-direction: column;
-   }
-   
-   .buttonGroup {
-     margin-top: 8px;
-     display: flex;
-     gap: 8px;
-   }
-   
-   .viewDetailsButton {
-     background-color: #007bff;
-     color: white;
-     border: none;
-     padding: 8px 12px;
-     border-radius: 4px;
-     cursor: pointer;
-   }
-   .viewDetailsButton:hover {
-     background-color: #0056b3;
-   }
-   
-   .deleteButton:hover {
-     background-color: #c82333;
-   }
-   
-   .errorText {
-     color: red;
-   }
-   
-   .starRating {
-     color: #fbc02d;
-     font-weight: bold;
-     margin-left: 6px;
-   }
-   
-   .googleReviewsContainer {
-     max-height: 150px;
-     overflow-y: auto;
-     background-color: #f9f9f9;
-     padding: 8px;
-     border-radius: 4px;
-     margin-bottom: 12px;
-     border: 1px solid #ddd;
-   }
-   
-   .googleReviewItem {
-     margin-bottom: 8px;
-   }
-   .googleReviewAuthor {
-     margin: 0;
-     font-weight: bold;
-   }
-   .googleReviewText {
-     margin: 4px 0 8px 0;
-     white-space: pre-wrap;
-   }
-   .googleReviewItem hr {
-     border: none;
-     border-bottom: 1px solid #ccc;
-   }
-   
-   /* 音声認識切り替え用 */
-   .speech-recognition-container {
-     display: block;
-   }
-   @media (max-width: 768px) {
-     .speech-recognition-container {
-       display: none;
-     }
-   }
-   
-   /* ======================================================
-      画像を固定表示するクラス
-      ただし z-index をマップより低くして背面に回す
-      ====================================================== */
-   .fixedLogo {
-     position: fixed;
-     bottom: 59%; /* 好みに応じて上下位置を調整 */
-     left: 50%;
-     transform: translateX(-50%);
-     max-width: 250px; 
-     opacity: 0.8;
-     pointer-events: none; /* マウス操作を透過 */
-     filter: drop-shadow(0 0 4px #ffffff);
-   
-     /* ★ Mapの z-index が 10。ここを 0 や 1 など低い値にすれば背面になる */
-     z-index: 0;
-   }
-   
-   /* モバイル用にロゴ縮小 */
-   @media (max-width: 768px) {
-     .fixedLogo {
-       max-width: 155px;
-       bottom: 61%;
-     }
-   }
-   
+/* ここ以降、アプリ独自のグローバルスタイルを書く */
+body {
+  @apply bg-gray-100;
+}
+
+/* リセット & ベース設定 */
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(to bottom, #2c3e50, #34495e);
+  color: #ffffff;
+  /* overflow: hidden;  ← コメントアウトして自動スクロールを許可 */
+  overflow: auto;
+}
+
+#root {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.appContainer {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  background-color: rgba(0, 0, 0, 0.5);
+  box-sizing: border-box;
+}
+
+/* ヘッダー */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background-color: rgba(0, 0, 0, 0.85);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+  z-index: 100;
+}
+
+.header .logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.header .buttonContainer {
+  display: flex;
+  gap: 10px;
+}
+
+/* 共通ボタンスタイル */
+button,
+.header .linkButton {
+  display: inline-block;
+  padding: 10px 15px;
+  font-size: 1rem;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+button:hover,
+.header .linkButton:hover {
+  transform: scale(1.05);
+}
+
+button:focus,
+.header .linkButton:focus {
+  outline: none;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+}
+
+button:active,
+.header .linkButton:active {
+  transform: scale(0.95);
+}
+
+.linkButton {
+  background-color: #007bff;
+}
+.linkButton:hover {
+  background-color: #0056b3;
+}
+
+.logoutButton {
+  background-color: #dc3545;
+}
+.logoutButton:hover {
+  background-color: #c82333;
+}
+
+/* 入力フィールド */
+input {
+  background-color: #1f1f1f;
+  color: #ffffff;
+  border: 1px solid #333333;
+  padding: 10px;
+  border-radius: 4px;
+  margin-right: 10px;
+  min-width: 200px;
+  transition: box-shadow 0.3s ease;
+}
+input:focus {
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+  outline: none;
+}
+input::placeholder {
+  color: #aaaaaa;
+}
+
+/* =========================
+   マップ表示のレスポンシブ対応
+   ========================= */
+.mapContainer {
+  position: relative;
+  width: 100%;
+  z-index: 10;
+  /* デスクトップなど大きめ画面用の高さ */
+  height: 500px;
+}
+
+/* 地図をコンテナの大きさに合わせて拡大縮小 */
+.mapContainer .map {
+  width: 100%;
+  height: 100%;
+}
+
+/* 画面が768px以下の時（スマホ等）の高さ調整 */
+@media (max-width: 768px) {
+  .mapContainer {
+    margin-top: 160px;
+    height: 50vh; /* 画面の高さの半分に */
+  }
+}
+
+/* Google マップのルート要素 (gm-style) も z-index を上げる */
+.mapContainer .gm-style {
+  z-index: 10 !important;
+}
+
+/* 他スタイル */
+.map {
+  /* ここで width:100%, height:100% が .mapContainer .map にあるので不要 */
+}
+
+/* Three.js 用コンテナ */
+.threeContainer {
+  width: 100%;
+  height: 400px;
+}
+
+/* Home */
+.homeContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  width: 100%;
+}
+
+.searchContainer {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.searchInput {
+  padding: 10px;
+  font-size: 1rem;
+  width: 200px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+.searchButton {
+  background-color: #007bff;
+}
+.searchButton:hover {
+  background-color: #0056b3;
+}
+
+/* エラー / 成功メッセージ */
+.errorText {
+  color: red;
+  margin-bottom: 10px;
+}
+.successText {
+  color: green;
+  margin-bottom: 10px;
+}
+
+/* ローディングオーバーレイ */
+.loadingOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 1000;
+}
+.spinner {
+  border: 8px solid #f3f3f3;
+  border-top: 8px solid #3498db;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 2s linear infinite;
+  margin-bottom: 20px;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.loadingText {
+  font-size: 1.5rem;
+  color: #ffffff;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+  }
+  .buttonContainer {
+    flex-direction: column;
+    gap: 5px;
+  }
+  input {
+    margin-right: 0;
+    width: 100%;
+  }
+  .searchContainer {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+}
+
+/* ReactModal Overlay (背景半透明) */
+.ReactModal__Overlay {
+  background-color: rgba(0, 0, 0, 0.8) !important;
+  z-index: 9999 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ReactModal Content (モーダル本体) */
+.reactModalContent {
+  position: relative;
+  background-color: #ffffff;
+  color: #000000;
+  border-radius: 8px;
+  padding: 10px;
+  max-width: 300px;
+  width: 80%;
+  margin: 150px auto 0 auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  font-family: Arial, sans-serif;
+  overflow-y: auto;
+  max-height: 80vh;
+}
+.modalTitle {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 1.5rem;
+  color: #333333;
+}
+
+/* FavoritesListなどのCSS */
+.favoritesContainer {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+  background-color: #f9f9f9;
+  border-radius: 6px;
+}
+.favoritesTitle {
+  margin-bottom: 16px;
+  font-size: 1.5rem;
+  text-align: center;
+}
+.noFavoritesText {
+  color: #666;
+  text-align: center;
+  margin-top: 20px;
+}
+.favoritesListContainer {
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 8px;
+  margin-bottom: 16px;
+}
+.favoriteList {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+.favoriteItem {
+  background: #fff;
+  margin-bottom: 12px;
+  padding: 12px;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  transition: background 0.2s;
+}
+.favoriteItem:hover {
+  background: #f0f0f0;
+}
+.favoriteDojoName {
+  font-size: 1.2rem;
+  margin: 0 0 4px 0;
+  color: #333;
+}
+.favoriteDojoAddress {
+  margin: 0 0 8px 0;
+  color: #777;
+}
+.favoriteLinks {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.websiteLink,
+.instagramLink {
+  color: #0066cc;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.websiteLink:hover,
+.instagramLink:hover {
+  color: #004999;
+}
+.notAvailable {
+  color: #aaa;
+}
+.buttonGroup {
+  display: flex;
+  gap: 10px;
+}
+.detailsButton,
+.deleteButton {
+  border: none;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  border-radius: 4px;
+  transition: background 0.2s, color 0.2s;
+}
+.detailsButton {
+  background-color: #2196f3;
+  color: #fff;
+}
+.detailsButton:hover {
+  background-color: #1976d2;
+}
+.deleteButton {
+  background-color: #f44336;
+  color: #fff;
+}
+.deleteButton:hover {
+  background-color: #d32f2f;
+}
+
+/* 営業時間リスト */
+.businessHours {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+.businessHours li {
+  margin: 5px 0;
+  color: #000000;
+}
+.instagram {
+  margin-top: 10px;
+  font-size: 1rem;
+  color: #333333;
+}
+.instagram a {
+  color: #007bff;
+  text-decoration: underline;
+}
+.instagram a:hover {
+  color: #0056b3;
+}
+.businessHoursHeader {
+  margin-top: 20px;
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+  color: #000000;
+  font-weight: bold;
+}
+.businessHours {
+  list-style-type: disc;
+  margin-left: 20px;
+  color: #444444;
+}
+.modalText {
+  font-size: 1rem;
+  color: #000000;
+  margin-bottom: 8px;
+}
+.modalSubHeader {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #000000;
+  margin-bottom: 10px;
+}
+.favoriteList {
+  list-style: none;
+  padding: 0;
+}
+.favoriteItem {
+  border: 1px solid #ccc;
+  padding: 16px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+}
+.buttonGroup {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+}
+.viewDetailsButton {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.viewDetailsButton:hover {
+  background-color: #0056b3;
+}
+.deleteButton:hover {
+  background-color: #c82333;
+}
+.errorText {
+  color: red;
+}
+.starRating {
+  color: #fbc02d;
+  font-weight: bold;
+  margin-left: 6px;
+}
+.googleReviewsContainer {
+  max-height: 150px;
+  overflow-y: auto;
+  background-color: #f9f9f9;
+  padding: 8px;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  border: 1px solid #ddd;
+}
+.googleReviewItem {
+  margin-bottom: 8px;
+}
+.googleReviewAuthor {
+  margin: 0;
+  font-weight: bold;
+}
+.googleReviewText {
+  margin: 4px 0 8px 0;
+  white-space: pre-wrap;
+}
+.googleReviewItem hr {
+  border: none;
+  border-bottom: 1px solid #ccc;
+}
+
+/* 音声認識切り替え用 */
+.speech-recognition-container {
+  display: block;
+}
+@media (max-width: 768px) {
+  .speech-recognition-container {
+    display: none;
+  }
+}
+
+/* 背面に置くロゴ例 */
+.fixedLogo {
+  position: fixed;
+  bottom: 59%;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 250px;
+  opacity: 0.8;
+  pointer-events: none;
+  filter: drop-shadow(0 0 4px #ffffff);
+  z-index: 0; /* Mapが z-index 10 ならこちらは 0 で背面に */
+}
+@media (max-width: 768px) {
+  .fixedLogo {
+    max-width: 155px;
+    bottom: 61%;
+  }
+}
