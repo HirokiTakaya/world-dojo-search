@@ -5,99 +5,86 @@ import { useNavigate, Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
 
+// 親コンポーネントから受け取るpropsに setAccessToken を追加
 export interface SignUpScreenProps {
   setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean | null>>;
-}
+  setAccessToken: React.Dispatch<React.SetStateAction<string | null>>;
+};
 
-/* 
-  1. PageWrapper：ページ全体をスクロール可能にし、position: relative; overflow: auto;
-  2. BackgroundImage：position: fixed; z-index: -1; で背面に固定表示
-  3. Container：z-index: 1; で前面にフォームを表示
-*/
-
-/* ページ全体のラッパコンテナ */
 const PageWrapper = styled.div`
+  padding-top:6rem;
   position: relative;
-  min-height: 100vh;
-  overflow: auto;
+  width: 100%;
+  height: 100%;
+
+  @media (max-width: 768px) {
+    padding-top:2rem !important;
+  }
 `;
 
-/* 背面の固定画像 */
 const BackgroundImage = styled.img`
-
- position: fixed;
-  bottom:44%;
+  position: fixed;
+  bottom: 44%;
   left: 50%;
   transform: translate(-50%, -50%);
   max-width: 350px;
   opacity: 0.8;
   pointer-events: none;
   filter: drop-shadow(0 0 4px #ffffff);
-
-  /* 全要素の背面に回す */
   z-index: 0;
-
-   /* モバイル用にロゴ縮小 */
-   @media (max-width: 768px) {
-   display:none;
-     bottom:25%;
-       max-width: 180px;
-       
-     
-   }
+  @media (max-width: 768px) {
+    display: none;
+  }
 `;
 
-/* フォームコンテナ（前面） */
 const Container = styled.div`
   position: relative;
   z-index: 1;
-
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-
-  min-height: 100vh;
-  padding: 0 20px;
   box-sizing: border-box;
+  padding: 0 20px;
 `;
 
-/* タイトル */
+//
+// ▼ ここからサイズ調整部分 ▼
+//
 const Title = styled.h1`
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: bold;
-  margin-bottom: 25px;
+  margin-bottom: 20px;
 `;
 
-/* 入力欄 */
 const Input = styled.input`
   width: 100%;
-  max-width: 400px;
-  padding: 16px;
-  margin-bottom: 20px;
+  max-width: 350px;
+  padding: 12px;
+  margin-bottom: 15px;
   border: 1px solid gray;
-  border-radius: 5px;
-  font-size: 16px;
+  border-radius: 4px;
+  font-size: 14px;
   box-sizing: border-box;
-
   &:focus {
     border-color: skyblue;
     outline: none;
   }
 `;
 
-/* ボタン */
 const Button = styled.button`
   background-color: skyblue;
-  padding: 12px 20px;
-  border-radius: 5px;
+  padding: 10px 16px;
+  border-radius: 4px;
   color: white;
-  font-size: 18px;
+  font-size: 14px;
   font-weight: bold;
-  margin-top: 10px;
+  margin-top: 8px;
   width: 100%;
-  max-width: 400px;
-  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+  max-width: 350px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border: none;
   cursor: pointer;
 
@@ -107,53 +94,63 @@ const Button = styled.button`
   }
 `;
 
-/* エラーメッセージ */
 const ErrorMessage = styled.p`
   color: red;
   margin-top: 10px;
-  font-size: 16px;
+  font-size: 14px;
 `;
 
-/* ログイン画面へのリンク */
 const LoginLink = styled.p`
-  margin-top: 20px;
-  font-size: 16px;
+  margin-top: 15px;
+  font-size: 14px;
   text-align: center;
 
   a {
     color: blue;
     text-decoration: none;
     font-weight: bold;
-
     &:hover {
       color: darkblue;
     }
   }
 `;
+//
+// ▲ ここまでサイズ調整部分 ▲
+//
 
-const SignUpScreen: React.FC<SignUpScreenProps> = ({ setIsLoggedIn }) => {
+const SignUpScreen: React.FC<SignUpScreenProps> = ({ setIsLoggedIn, setAccessToken }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  // トークンチェック
+  // ❶ body のスクロールを止める
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden'; // 止める
+
+    return () => {
+      // ページを離れるときに元に戻す
+      document.body.style.overflow = originalOverflow;
+    };
+  }, []);
+
+  // ログイン済みなら /home に飛ばす
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
     if (token) {
       setIsLoggedIn(true);
+      setAccessToken(token); // <--- すでにあるトークンを親のstateにも反映
       navigate('/home');
     } else {
       setIsLoggedIn(false);
     }
-  }, [navigate, setIsLoggedIn]);
+  }, [navigate, setIsLoggedIn, setAccessToken]);
 
-  // フォーム入力状態
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
-  // サインアップ実行
   const handleSignUp = async () => {
     setLoading(true);
     setError('');
@@ -176,12 +173,16 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({ setIsLoggedIn }) => {
         const data = await response.json();
         localStorage.setItem('accessToken', data.access);
         localStorage.setItem('refreshToken', data.refresh);
+        // 親ステートにもセット（ログイン状態＆accessToken）
         setIsLoggedIn(true);
+        setAccessToken(data.access);
+
         navigate('/home');
       } else {
         const errorData = await response.json();
         const errorMessage =
-          errorData.detail || (errorData.username ? errorData.username[0] : t('signUpFailed'));
+          errorData.detail ||
+          (errorData.username ? errorData.username[0] : t('signUpFailed'));
         setError(errorMessage);
       }
     } catch (err) {
@@ -193,13 +194,9 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({ setIsLoggedIn }) => {
 
   return (
     <PageWrapper>
-      {/* 背景画像 */}
       <BackgroundImage src="/images/jiujitsuLogo2.png" alt="Jiu Jitsu Logo" />
-
-      {/* フォーム */}
       <Container>
         <Title>{t('signUp')}</Title>
-
         <Input
           type="email"
           placeholder={t('email')}
@@ -218,13 +215,10 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({ setIsLoggedIn }) => {
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
         />
-
         <Button onClick={handleSignUp} disabled={loading}>
           {loading ? t('signingUp') : t('signUpButton')}
         </Button>
-
         {error && <ErrorMessage>{error}</ErrorMessage>}
-
         <LoginLink>
           {t('alreadyHaveAccount')} <Link to="/">{t('login')}</Link>
         </LoginLink>

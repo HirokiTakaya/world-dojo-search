@@ -165,7 +165,9 @@ margin-right:15px;
 /* ========== レスポンシブ: 640px以下 (スマホ等) ========== */
 @media (max-width: 640px) {
 
-
+  .react-chatbot-kit-chat-input-container button{
+    margin-right:0 !important ;
+  }
   .chatbot-window {
     width: calc(90vw - 24px); /* 幅を画面の9割程度 */
     height: 50vh;             /* 高さを50vhに */

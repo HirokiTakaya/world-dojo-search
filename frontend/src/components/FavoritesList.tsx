@@ -11,14 +11,7 @@ import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 
-/* 
-  PracticeCalendar と同様に、コンテナを styled-components で定義し、
-  - レスポンシブな max-width
-  - 上下余白 (margin-top)
-  - Tailwind のユーティリティ @apply
-*/
 const FavoritesContainer = styled.div`
-  /* 1) Tailwindユーティリティでデザイン（背景・角丸等） */
   @apply
     bg-white/80
     backdrop-blur-sm
@@ -32,31 +25,22 @@ const FavoritesContainer = styled.div`
     w-full
     mx-auto;
 
-  /* 2) レスポンシブ幅 (max-width) を段階的に定義 */
   @apply max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl;
 
-  /* 3) 上下の余白を画面幅に応じて増やす */
-  margin-top: 11rem; /* モバイル: 64px */
+  margin-top: 11rem;
   @media (min-width: 640px) {
-    margin-top: 6rem; /* 640px以上: 96px */
+    margin-top: 6rem;
   }
   @media (min-width: 768px) {
-    margin-top: 8rem; /* 768px以上: 128px */
+    margin-top: 8rem;
   }
   @media (min-width: 1024px) {
-    margin-top: 10rem; /* 1024px以上: 160px */
+    margin-top: 10rem;
   }
 `;
 
 const Title = styled.h2`
   @apply text-xl sm:text-2xl md:text-3xl font-bold text-center mb-4 text-gray-800;
-`;
-
-const ModalContainer = styled.div`
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(6px);
-  border-radius: 1rem;
-  padding: 1.5rem;
 `;
 
 type ConfirmDeleteModalProps = {
@@ -133,7 +117,7 @@ const FavoritesList: React.FC<FavoritesListProps> = ({ accessToken }) => {
   const [targetName, setTargetName] = useState<string | null>(null);
 
   // データ取得ロジック
-  const fetchFavorites = React.useCallback(async () => {
+  const fetchFavorites = useCallback(async () => {
     if (!accessToken) {
       setError(t("errorFetchingFavorites", "Login required."));
       return;
@@ -294,6 +278,7 @@ const FavoritesList: React.FC<FavoritesListProps> = ({ accessToken }) => {
         </p>
       )}
 
+      {/* 選択した道場の詳細モーダル */}
       {selectedDojo && (
         <ModalDojoDetail
           isOpen={isModalOpen}
@@ -302,6 +287,7 @@ const FavoritesList: React.FC<FavoritesListProps> = ({ accessToken }) => {
         />
       )}
 
+      {/* 削除確認用モーダル */}
       <ConfirmDeleteModal
         isOpen={isConfirmOpen}
         onClose={closeConfirmModal}

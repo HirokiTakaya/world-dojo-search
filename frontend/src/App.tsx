@@ -1,3 +1,4 @@
+// src/App.tsx
 import React, { useState, useEffect } from "react";
 import {
   BrowserRouter as Router,
@@ -53,7 +54,7 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // ログイン関連
+  // ログイン関連ステート
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
 
@@ -71,11 +72,11 @@ const App: React.FC = () => {
   // モバイル判定
   const isMobile = useIsMobile();
 
-  // 起動時にローカルストレージからトークン取得
+  // -- 起動時に localStorage からトークンを取り出す --
   useEffect(() => {
-    const token = localStorage.getItem("accessToken");
-    setIsLoggedIn(Boolean(token));
-    setAccessToken(token);
+    const storedToken = localStorage.getItem("accessToken");
+    setIsLoggedIn(Boolean(storedToken));
+    setAccessToken(storedToken);
   }, []);
 
   // 音声認識用フック
@@ -87,7 +88,7 @@ const App: React.FC = () => {
     speechLang
   );
 
-  // モバイル時はダミー音声認識
+  // モバイル時は音声認識をオフにしたダミーを返す
   const dummySpeechRecognition: UseSpeechRecognitionResult = {
     startListening: () => {},
     stopListening: () => {},
@@ -109,7 +110,9 @@ const App: React.FC = () => {
     setAccessToken(null);
   };
 
-  // 検索処理
+  // --------------------
+  //   ログイン後の検索
+  // --------------------
   const handleSearch = async (searchTerm?: string) => {
     const query = searchTerm !== undefined ? searchTerm : region;
     if (!query.trim()) {
@@ -158,7 +161,6 @@ const App: React.FC = () => {
 
       {/* ---------- ヘッダー ---------- */}
       <header className="fixed top-0 left-0 w-full bg-black/80 shadow-md z-50 p-4">
-        {/* 例: ロゴ・ナビゲーション */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           {/* 左側ロゴ・リンク */}
           <div className="flex items-center gap-4">
@@ -169,7 +171,7 @@ const App: React.FC = () => {
                 className="h-20 w-auto"
               />
             </Link>
-            {/* ログインしているときだけ表示したいリンクがあればここで条件分岐 */}
+            {/* ログインしているときだけ表示したいリンク */}
             {isLoggedIn && (
               <>
                 <Link to="/favorites" className="text-white">
@@ -258,11 +260,21 @@ const App: React.FC = () => {
             />
             <Route
               path="/login"
-              element={<LoginScreen setIsLoggedIn={setIsLoggedIn} />}
+              element={
+                <LoginScreen
+                  setIsLoggedIn={setIsLoggedIn}
+                  setAccessToken={setAccessToken}
+                />
+              }
             />
             <Route
               path="/signup"
-              element={<SignUpScreen setIsLoggedIn={setIsLoggedIn} />}
+              element={
+                <SignUpScreen
+                  setIsLoggedIn={setIsLoggedIn}
+                  setAccessToken={setAccessToken}
+                />
+              }
             />
             <Route
               path="/home"
