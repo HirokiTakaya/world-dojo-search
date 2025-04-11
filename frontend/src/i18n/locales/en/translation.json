@@ -63,5 +63,12 @@
   "checkingLoginStatus": "Checking login status...",
   "searchRegionPrompt": "Please enter a region to search.",
   "logout": "Logout",
-  "signup": "Sign Up"
+  "signup": "Sign Up",
+ 
+    "videoSearchTitle": "BJJ Technique Video Search",
+    "loadingMessage": "Loading...",
+    "errorOccurredMessage": "An error occurred.",
+    "noVideosMessage": "No videos found.",
+    "chooseTechnique": "Choose a technique",
+    "youtubeSearch": "Video Search"
 }

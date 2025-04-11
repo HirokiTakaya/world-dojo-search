@@ -1,0 +1,8 @@
+@media (max-width: 640px) {
+    .youtube-search {
+      color: white;          /* テキストの色 */
+      padding-top: 160px;     /* 上余白 */
+      padding-left: 16px;    /* 左余白 */
+      padding-right: 16px;   /* 右余白 */
+    }
+  }

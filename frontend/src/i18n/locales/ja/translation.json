@@ -63,5 +63,11 @@
   "checkingLoginStatus": "ログイン状態を確認中...",
   "searchRegionPrompt": "検索する地域を入力してください。",
   "logout": "ログアウト",
-  "signup": "サインアップ"
+  "signup": "サインアップ",
+  "videoSearchTitle": "柔術テクニック動画検索",
+  "loadingMessage": "読み込み中...",
+  "errorOccurredMessage": "エラーが発生しました",
+  "noVideosMessage": "該当する動画がありません。",
+  "chooseTechnique": "テクニックを選ぶ",
+    "youtubeSearch": "動画検索"
 }

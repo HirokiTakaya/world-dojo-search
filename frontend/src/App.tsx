@@ -27,6 +27,9 @@ import LanguageSwitcher from "./components/LanguageSwitcher";
 import PracticeCalendar from "./components/PracticeCalendar";
 import ChatbotSimple from "./components/ChatbotSimple";
 
+// ★ YouTube検索ページのコンポーネントをインポート
+import YoutubeSearchPage from "./pages/YoutubeSearchPage";
+
 interface FetchDojoDataResponse {
   dojos: Dojo[];
 }
@@ -180,6 +183,10 @@ const App: React.FC = () => {
                 <Link to="/practice" className="text-white">
                   {t("practiceCalendar")}
                 </Link>
+                {/* ★ 新規追加: YouTube動画検索へのリンク */}
+                <Link to="/youtube-search" className="text-white">
+                  {t("youtubeSearch")} 
+                </Link>
               </>
             )}
           </div>
@@ -316,6 +323,17 @@ const App: React.FC = () => {
                   <Navigate to="/login" replace />
                 ) : (
                   <PracticeCalendar accessToken={accessToken} />
+                )
+              }
+            />
+            {/* ★ 新規追加: YouTube検索ページ */}
+            <Route
+              path="/youtube-search"
+              element={
+                !isLoggedIn ? (
+                  <Navigate to="/login" replace />
+                ) : (
+                  <YoutubeSearchPage />
                 )
               }
             />
