@@ -16,6 +16,10 @@ from playwright.async_api import async_playwright  # Playwright（不要なら�
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
+import time
+RATE_LIMIT_MS = 400            # Google 推奨：QPS ≒ 2.5
+SHORT_CACHE_SEC = 30           # TextSearch / NearbySearch の URL を 30 秒キャッシュ
+DETAIL_CACHE_SEC = 60 * 60 * 24  # PlaceDetails は既存 24h のまま
 
 # ----------------------------------------------------------------------------
 # 1. 通常の複数キーワードリスト (TextSearch 用)
@@ -130,8 +134,15 @@ async def fetch_textsearch_place_ids(
         params["radius"] = radius
 
     page_count = 0
-    while page_count < max_pages:
-        async with session.get(base_url, params=params) as resp:
+   
+                seen_urls: Set[str] = set()
+   while page_count < max_pages:
+        url = str(session._build_url(base_url, params=params))
+        if cache.get(url):                             # ← 30 秒キャッシュで二重発射防止
+            break
+        cache.set(url, True, SHORT_CACHE_SEC)
+
+      async with session.get(base_url, params=params) as resp:
             data = await resp.json()
             status = data.get("status")
             if status not in ("OK", "ZERO_RESULTS"):
@@ -148,12 +159,10 @@ async def fetch_textsearch_place_ids(
             if not next_page_token:
                 break
 
-            params = {
-                "pagetoken": next_page_token,
-                "key": api_key
-            }
+              params = {"pagetoken": next_page_token, "key": api_key}
+           await asyncio.sleep(2)        # token 有効化待ち
             page_count += 1
-            await asyncio.sleep(2)
+            await asyncio.sleep(RATE_LIMIT_MS / 1000)  # ← レートリミット
 
     return place_ids
 
@@ -285,8 +294,14 @@ async def fetch_dojo_data_async(query: str, api_key: str, max_pages: int = 5) ->
 
     # 3. Place Details 取得
     detail_tasks = []
-    for pid in all_place_ids:
-        detail_tasks.append(fetch_place_details_async(pid, api_key))
+     fetched_today = cache.get("fetched_detail_pids", set())
+ for pid in all_place_ids:
+     if pid in fetched_today:
+         continue
+     await asyncio.sleep(RATE_LIMIT_MS / 1000)
+     detail_tasks.append(fetch_place_details_async(pid, api_key))
+     fetched_today.add(pid)
+ cache.set("fetched_detail_pids", fetched_today, DETAIL_CACHE_SEC)
 
     detail_results = await asyncio.gather(*detail_tasks, return_exceptions=True)
     dojos = []
