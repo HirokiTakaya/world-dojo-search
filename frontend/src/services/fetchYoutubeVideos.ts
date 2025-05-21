@@ -1,6 +1,7 @@
 // src/services/fetchYoutubeVideos.ts
 export async function fetchYoutubeVideos(keyword: string, pageToken = "") {
   const API_KEY = process.env.REACT_APP_YOUTUBE_API_KEY; 
+  console.log("API_KEY:", API_KEY); // これを追加
   const BASE_URL = "https://www.googleapis.com/youtube/v3/search";
 
   const q = `柔術 ${keyword}`;

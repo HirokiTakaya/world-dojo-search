@@ -1,4 +1,6 @@
 {
     "appService.defaultWebAppToDeploy": "/subscriptions/e5ffd3f1-584c-4ab8-82e4-280065d3ed36/resourceGroups/appsvc_linux_centralus_basic/providers/Microsoft.Web/sites/hiroki-jiujitsu-frontend",
-    "appService.deploySubpath": "build"
+    "appService.deploySubpath": "build",
+     "appService.preDeployTask": "npm: build"
+ 
 }

@@ -1,15 +1,24 @@
-# views.py
-# views.py（元々のコードに音声認識エンドポイントを追加した完全版）
+# views.py — FULL VERSION (Stripe Subscription integrated)
+# -------------------------------------------------------------
+# Django REST views for jiujitsuInfo project
+# Updated: 2025‑04‑18
+# -------------------------------------------------------------
+"""Full views.py including original dojo logic + Stripe $5 CAD subscription endpoints."""
+
 import logging
 import os
 import time
+from datetime import datetime
 
+import stripe
 from asgiref.sync import async_to_sync
 from django.conf import settings
 from django.core.cache import cache
 from django.db import transaction
-from django.http import JsonResponse
-from rest_framework import viewsets, filters, status, permissions
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import redirect
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -17,10 +26,22 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
 
+# ─────────────── Stripe 初期化 ───────────────
+stripe.api_key = settings.STRIPE_SECRET_KEY
+if hasattr(settings, "STRIPE_API_VERSION"):
+    stripe.api_version = settings.STRIPE_API_VERSION
 
+# ─────────────── ロガー設定 ───────────────
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+if not logger.handlers:
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
 
-
-from .models import Dojo, Feedback, Favorite, PracticeDay
+# ─────────────── Imports after logger ───────────────
+from .models import Dojo, Feedback, Favorite, PracticeDay, StripeCustomer, Subscription
 from .serializers import (
     DojoSerializer,
     FeedbackSerializer,
@@ -41,15 +62,6 @@ from .services import get_open_mat_info
 
 User = get_user_model()
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-if not logger.handlers:
-    handler = logging.StreamHandler()
-    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-
-
 # ─── チャットボット用エンドポイント ─────────────────────────────
 class ChatView(APIView):
     """
@@ -68,19 +80,226 @@ class ChatView(APIView):
 # ──────────────────────────────────────────────────────────────
 
 
-@api_view(['POST'])
+# =============================================================
+#   認証まわり（Login / Register / Google）
+# =============================================================
+@api_view(["POST"])
 @permission_classes([AllowAny])
 def register(request):
-    """
-    関数型エンドポイント（使用しない場合は RegisterView を利用してください）
-    """
     serializer = UserSerializer(data=request.data)
     if serializer.is_valid():
         user = serializer.save()
-        return Response({'message': 'User created successfully'}, status=status.HTTP_201_CREATED)
-    else:
-        print('Serializer errors:', serializer.errors)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"message": "User created successfully"}, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+# views.py — FULL VERSION (Stripe Subscription integrated)
+# -------------------------------------------------------------
+# Django REST views for jiujitsuInfo project
+# Updated: 2025‑04‑18
+# -------------------------------------------------------------
+"""Full views.py including original dojo logic + Stripe $5 CAD subscription endpoints."""
+
+import logging
+import os
+import time
+from datetime import datetime
+
+import stripe
+from asgiref.sync import async_to_sync
+from django.conf import settings
+from django.core.cache import cache
+from django.db import transaction
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import redirect
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework import filters, permissions, status, viewsets
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth import get_user_model
+
+# ─────────────── Stripe 初期化 ───────────────
+stripe.api_key = settings.STRIPE_SECRET_KEY
+if hasattr(settings, "STRIPE_API_VERSION"):
+    stripe.api_version = settings.STRIPE_API_VERSION
+
+# ─────────────── ロガー設定 ───────────────
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+if not logger.handlers:
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
+# ─────────────── Imports after logger ───────────────
+from .models import Dojo, Feedback, Favorite, PracticeDay, StripeCustomer, Subscription
+from .serializers import (
+    DojoSerializer,
+    FeedbackSerializer,
+    LoginSerializer,
+    UserSerializer,
+    FavoriteSerializer,
+    PracticeDaySerializer,
+)
+from .utils import (
+    fetch_dojo_data_async,
+    fetch_place_details_async,
+    fetch_instagram_link_async,
+    fetch_place_details,
+    fetch_instagram_link,
+    fetch_dojo_data_nearby_async,
+)
+from .services import get_open_mat_info
+
+User = get_user_model()
+
+# =============================================================
+#   チャットボット（簡易エコー）
+# =============================================================
+class ChatView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        message = request.data.get("message", "")
+        session = request.data.get("session", "")
+        reply = f"あなたのメッセージは「{message}」ですね。"
+        return Response({"reply": reply}, status=200)
+
+# =============================================================
+#   認証まわり（Login / Register / Google）
+# =============================================================
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def register(request):
+    serializer = UserSerializer(data=request.data)
+    if serializer.is_valid():
+        user = serializer.save()
+        return Response({"message": "User created successfully"}, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# ... (GoogleLoginView, LoginView, RegisterView definitions remain unchanged)
+
+# =============================================================
+#   Stripe Billing Endpoints
+# =============================================================
+class CreateCheckoutSessionView(APIView):
+    """POST /api/stripe/create-checkout-session/
+    Body: {"plan": "monthly" | "yearly"}
+    Returns: {"sessionId": "cs_..."}
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        plan = request.data.get("plan", "monthly")
+        price_id = (
+            settings.STRIPE_PRICE_YEARLY
+            if plan == "yearly"
+            else settings.STRIPE_PRICE_MONTHLY
+        )
+        # Stripe customer を用意
+        sc, _ = StripeCustomer.objects.get_or_create(
+            user=request.user,
+            defaults={"stripe_id": None},
+        )
+        customer_kwargs = {}
+        if sc.stripe_id:
+            customer_kwargs["customer"] = sc.stripe_id
+        session = stripe.checkout.Session.create(
+            mode="subscription",
+            payment_method_types=["card"],
+            line_items=[{"price": price_id, "quantity": 1}],
+            success_url=request.build_absolute_uri(
+                "/billing/success?session_id={CHECKOUT_SESSION_ID}"
+            ),
+            cancel_url=request.build_absolute_uri("/billing/cancel"),
+            customer_email=request.user.email,
+            **customer_kwargs,
+        )
+        if not sc.stripe_id:
+            sc.stripe_id = session.customer
+            sc.save(update_fields=["stripe_id"])
+        return Response({"sessionId": session.id})
+
+@csrf_exempt
+def stripe_webhook(request):
+    payload = request.body
+    sig_header = request.META.get("HTTP_STRIPE_SIGNATURE", "")
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, settings.STRIPE_WEBHOOK_SECRET
+        )
+    except (ValueError, stripe.error.SignatureVerificationError) as e:
+        logger.error(f"Webhook error: {e}")
+        return HttpResponse(status=400)
+
+    # ------ ハンドラ ------
+    event_type = event["type"]
+    data = event["data"]["object"]
+
+    if event_type == "checkout.session.completed":
+        _handle_checkout_completed(data)
+    elif event_type in (
+        "customer.subscription.created",
+        "customer.subscription.updated",
+        "customer.subscription.deleted",
+    ):
+        _handle_subscription_event(data)
+
+    return HttpResponse(status=200)
+
+
+def _handle_checkout_completed(session):
+    logger.debug("Checkout completed: %s", session.get("id"))
+    customer_id = session.get("customer")
+    sub_id = session.get("subscription")
+    _sync_subscription(customer_id, sub_id)
+
+
+def _handle_subscription_event(subscription):
+    customer_id = subscription.get("customer")
+    sub_id = subscription.get("id")
+    _sync_subscription(customer_id, sub_id, payload=subscription)
+
+
+def _sync_subscription(customer_id, sub_id, payload=None):
+    if not customer_id or not sub_id:
+        return
+    # Fetch local user
+    try:
+        sc = StripeCustomer.objects.get(stripe_id=customer_id)
+    except StripeCustomer.DoesNotExist:
+        logger.warning("StripeCustomer not found for %s", customer_id)
+        return
+    sub_obj, _ = Subscription.objects.update_or_create(
+        stripe_sub_id=sub_id,
+        defaults={
+            "customer": sc,
+            "status": payload.get("status") if payload else "active",
+            "current_period_end": datetime.fromtimestamp(
+                payload.get("current_period_end")
+                if payload else stripe.Subscription.retrieve(sub_id).current_period_end
+            ),
+        },
+    )
+    logger.debug("Subscription synced: %s", sub_obj.id)
+
+
+class CustomerPortalView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        try:
+            sc = StripeCustomer.objects.get(user=request.user)
+        except StripeCustomer.DoesNotExist:
+            return Response({"error": "Stripe customer not found"}, status=404)
+        portal = stripe.billing_portal.Session.create(
+            customer=sc.stripe_id,
+            return_url=request.build_absolute_uri("/dashboard/billing"),
+        )
+        return Response({"url": portal.url})
 
 
 class FetchDojoDataView(APIView):
@@ -393,3 +612,104 @@ class PracticeDayViewSet(viewsets.ModelViewSet):
         practice_day = serializer.save(user=request.user)
         return Response(self.get_serializer(practice_day).data, status=201)
 
+# ─── Stripe Billing Endpoints ───────────────────────────────────
+import stripe
+from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework.decorators import api_view
+
+stripe.api_key = settings.STRIPE_SECRET_KEY
+
+
+@api_view(["POST"])
+@permission_classes([permissions.IsAuthenticated])
+def create_checkout_session(request):
+    """
+    フロントエンド → POST plan=monthly|yearly
+    Stripe Checkout セッションを返す
+    """
+    plan = request.data.get("plan", "monthly")
+    price_id = (
+        settings.STRIPE_PRICE_MONTHLY
+        if plan == "monthly"
+        else settings.STRIPE_PRICE_YEARLY
+    )
+
+    # 既存 StripeCustomer があれば再利用
+    customer_obj, _ = StripeCustomer.objects.get_or_create(
+        user=request.user,
+        defaults={"stripe_id": stripe.Customer.create(email=request.user.email).id},
+    )
+
+    session = stripe.checkout.Session.create(
+        mode="subscription",
+        customer=customer_obj.stripe_id,
+        success_url=request.build_absolute_uri(
+            "/billing/success?session_id={CHECKOUT_SESSION_ID}"
+        ),
+        cancel_url=request.build_absolute_uri("/billing/cancel"),
+        line_items=[{"price": price_id, "quantity": 1}],
+    )
+    return Response({"sessionId": session.id})
+
+
+@csrf_exempt
+@api_view(["POST"])
+@permission_classes([AllowAny])  # Stripe からの Webhook は未認証
+def stripe_webhook(request):
+    payload = request.body
+    sig = request.META.get("HTTP_STRIPE_SIGNATURE")
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig, settings.STRIPE_WEBHOOK_SECRET
+        )
+    except stripe.error.SignatureVerificationError:
+        return Response(status=400)
+
+    if event["type"] in (
+        "checkout.session.completed",
+        "customer.subscription.updated",
+        "customer.subscription.deleted",
+    ):
+        data = event["data"]["object"]
+        _sync_subscription_from_event(data)
+    return Response(status=200)
+
+
+def _sync_subscription_from_event(data):
+    """
+    Checkout/Subscription イベントからローカル DB を更新
+    """
+    sub = stripe.Subscription.retrieve(data["subscription"]) if "subscription" in data else data
+    customer_id = sub["customer"]
+    cust_obj, _ = StripeCustomer.objects.get_or_create(
+        stripe_id=customer_id,
+        defaults={"user": User.objects.filter(email=sub["customer_email"]).first()},
+    )
+    Subscription.objects.update_or_create(
+        stripe_sub_id=sub["id"],
+        defaults={
+            "customer": cust_obj,
+            "status": sub["status"],
+            "current_period_end": datetime.fromtimestamp(sub["current_period_end"]),
+        },
+    )
+
+
+@api_view(["GET"])
+@permission_classes([permissions.IsAuthenticated])
+def create_customer_portal(request):
+    """
+    ユーザー自身で解約・支払方法変更できる Customer Portal
+    """
+    try:
+        customer = request.user.stripecustomer
+    except StripeCustomer.DoesNotExist:
+        return Response({"error": "No Stripe customer"}, status=400)
+
+    portal = stripe.billing_portal.Session.create(
+        customer=customer.stripe_id,
+        return_url=request.build_absolute_uri("/dashboard/billing"),
+    )
+    return Response({"url": portal.url})
+# ──────────────────────────────────────────────────────────────

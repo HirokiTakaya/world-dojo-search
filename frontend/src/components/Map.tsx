@@ -1,5 +1,3 @@
-// src/components/Map.tsx
-
 import React, { useEffect, useRef } from "react";
 import styles from "../App.module.css";
 import { Dojo, Favorite } from "../types";
@@ -17,35 +15,48 @@ const Map: React.FC<MapProps> = React.memo(({ lat, lng, dojos, favorites, onMark
   const googleMapRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<google.maps.Marker[]>([]);
 
+  // Google Mapsスクリプトを動的に読み込む
   useEffect(() => {
-    console.log("Map component received dojos:", dojos); // 追加
+    const existingScript = document.querySelector("#google-maps-script");
 
-    if (!window.google || !window.google.maps) {
-      console.error("Google Maps script is not loaded.");
-      return;
+    if (!existingScript) {
+      const script = document.createElement("script");
+      script.id = "google-maps-script";
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}&libraries=places`;
+      script.async = true;
+      script.defer = true;
+
+      script.onload = () => {
+        initMap();
+      };
+
+      document.body.appendChild(script);
+    } else {
+      if (window.google && window.google.maps) {
+        initMap();
+      } else {
+        existingScript.addEventListener("load", initMap);
+      }
     }
 
-    // マップの初期化 (初回のみ)
-    if (!googleMapRef.current && mapRef.current) {
-      googleMapRef.current = new google.maps.Map(mapRef.current, {
-        center: { lat, lng },
-        zoom: 12,
-      });
-    } else if (googleMapRef.current) {
-      // センターを更新
-      googleMapRef.current.setCenter({ lat, lng });
-    }
+    return () => {
+      existingScript?.removeEventListener("load", initMap);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-    // 既存のマーカーを削除
+  useEffect(() => {
+    if (!window.google || !window.google.maps || !googleMapRef.current) return;
+
+    googleMapRef.current.setCenter({ lat, lng });
+
     markersRef.current.forEach((marker) => marker.setMap(null));
     markersRef.current = [];
 
-    // お気に入りのDojo IDを抽出
     const favoriteDojoIds = favorites.map((fav) => fav.dojo.id);
 
-    // 道場ごとにマーカーを配置
     dojos.forEach((dojo) => {
-      if (dojo.latitude !== null && dojo.longitude !== null) {
+      if (dojo.latitude != null && dojo.longitude != null) {
         const isFavorite = favoriteDojoIds.includes(dojo.id);
 
         const marker = new google.maps.Marker({
@@ -53,23 +64,26 @@ const Map: React.FC<MapProps> = React.memo(({ lat, lng, dojos, favorites, onMark
           map: googleMapRef.current!,
           title: dojo.name,
           icon: isFavorite
-            ? "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" // お気に入り用のアイコン
-            : undefined, // デフォルトのアイコン
+            ? "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+            : undefined,
         });
 
-        // クリックで親に通知
-        marker.addListener("click", () => {
-          onMarkerClick(dojo);
-        });
-
+        marker.addListener("click", () => onMarkerClick(dojo));
         markersRef.current.push(marker);
-      } else {
-        console.warn(`Dojo ${dojo.name} is missing latitude or longitude.`);
       }
     });
   }, [lat, lng, dojos, favorites, onMarkerClick]);
 
-  return <div ref={mapRef} className={styles.map}></div>;
+  const initMap = () => {
+    if (!mapRef.current || googleMapRef.current) return;
+
+    googleMapRef.current = new window.google.maps.Map(mapRef.current, {
+      center: { lat, lng },
+      zoom: 12,
+    });
+  };
+
+  return <div ref={mapRef} className={styles.map} />;
 });
 
 export default Map;
