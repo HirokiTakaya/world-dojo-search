@@ -4,14 +4,19 @@ import './index.css';
 import './App.module.css'; // ← ここでTailwindを読み込む
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import { Elements } from "@stripe/react-stripe-js";
+import { loadStripe } from "@stripe/stripe-js";
 
-
+// Stripe 公開キーを.envから取得
+const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY!);
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 root.render(
   <React.StrictMode>
+    <Elements stripe={stripePromise}>
     <App />
+    </Elements>
   </React.StrictMode>
 );
 

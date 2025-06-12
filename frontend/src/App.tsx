@@ -29,7 +29,7 @@ import ChatbotSimple from "./components/ChatbotSimple";
 
 // ★ YouTube検索ページのコンポーネントをインポート
 import YoutubeSearchPage from "./pages/YoutubeSearchPage";
-
+import CheckoutForm from "./components/CheckoutForm";
 interface FetchDojoDataResponse {
   dojos: Dojo[];
 }
@@ -112,48 +112,71 @@ const App: React.FC = () => {
     setIsLoggedIn(false);
     setAccessToken(null);
   };
-
+  const FREE_THROTTLE_DAYS = 3;
   // --------------------
   //   ログイン後の検索
   // --------------------
   const handleSearch = async (searchTerm?: string) => {
+    // 検索語を確定
     const query = searchTerm !== undefined ? searchTerm : region;
     if (!query.trim()) {
-      setError(t("searchRegionPrompt")); // 例: "Please enter a region to search."
+      // 地域未入力時のエラー（i18n を利用）
+      setError(t("searchRegionPrompt"));
       return;
     }
 
+    // スピナー表示・前状態クリア
     setLoading(true);
     setError(null);
     setDojos([]);
     setCenter({ lat: 35.6895, lng: 139.6917 });
 
     try {
+      // API コール（lang パラメータは不要になりました）
       const dojoResponse = await api.get<FetchDojoDataResponse>(
         "/fetch_dojo_data/",
-        {
-          params: { query },
-        }
+        { params: { query } }
       );
       const { dojos } = dojoResponse.data;
+
       if (dojos && dojos.length > 0) {
+        // 結果があればステート更新
         setDojos(dojos);
         const firstDojo = dojos[0];
-        if (firstDojo.latitude !== null && firstDojo.longitude !== null) {
-          setCenter({ lat: firstDojo.latitude, lng: firstDojo.longitude });
+        if (
+          firstDojo.latitude !== null &&
+          firstDojo.longitude !== null
+        ) {
+          setCenter({
+            lat: firstDojo.latitude,
+            lng: firstDojo.longitude,
+          });
         }
       } else {
-        setError(t("noDojosFound")); // 例: "No dojos found."
+        // 検索結果ゼロ
+        setError(t("noDojosFound"));
       }
     } catch (err: unknown) {
       if (isAxiosError(err)) {
-        const message =
-          err.response?.data?.error ?? t("errorFetchingData", "Error fetching data");
-        setError(message);
+        // Axios エラーならステータスを判定
+        if (err.response?.status === 429) {
+          // レート制限（428）なら i18n キー throttleError を使う
+          setError(
+            t("throttleError", { days: FREE_THROTTLE_DAYS })
+          );
+        } else {
+          // その他の API エラーはバックエンドメッセージ or 汎用
+          const message =
+            err.response?.data?.error ??
+            t("errorFetchingData", "Error fetching data");
+          setError(message);
+        }
       } else {
+        // Axios 以外の例外
         setError(t("unexpectedError", "Unexpected error occurred."));
       }
     } finally {
+      // 常にローディング解除
       setLoading(false);
     }
   };
@@ -187,6 +210,10 @@ const App: React.FC = () => {
                 <Link to="/youtube-search" className="text-white">
                   {t("youtubeSearch")} 
                 </Link>
+                 {/* ここを追加 */}
+                <Link to="/subscribe" className="text-yellow-400 font-bold">
+    {t("subscribe")}
+  </Link>
               </>
             )}
           </div>
@@ -337,6 +364,16 @@ const App: React.FC = () => {
                 )
               }
             />
+            <Route
+  path="/subscribe"
+  element={
+    !isLoggedIn ? (
+      <Navigate to="/login" replace />
+    ) : (
+      <CheckoutForm />
+    )
+  }
+/>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>

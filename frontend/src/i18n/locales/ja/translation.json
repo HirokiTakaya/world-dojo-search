@@ -69,5 +69,14 @@
   "errorOccurredMessage": "エラーが発生しました",
   "noVideosMessage": "該当する動画がありません。",
   "chooseTechnique": "テクニックを選ぶ",
-    "youtubeSearch": "動画検索"
+    "youtubeSearch": "動画検索",
+    "throttleError": "無料プランでは検索は {{days}} 日に 1 回までです。",
+    "cardholderNameLabel":   "カード名義（半角英字）",
+    "cardholderNamePlaceholder": "例）TARO YAMADA",
+    "cardError":             "カード情報エラー",
+    "subscriptionCreationSuccess": "Premium サブスクリプション作成完了！",
+    "subscriptionCreationFailed": "サブスク作成に失敗しました",
+    "processing":            "処理中…",
+    "subscribeButton":       "CA$5/月で登録",
+      "subscribe": "登録する"
 }

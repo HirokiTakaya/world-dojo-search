@@ -70,5 +70,15 @@
     "errorOccurredMessage": "An error occurred.",
     "noVideosMessage": "No videos found.",
     "chooseTechnique": "Choose a technique",
-    "youtubeSearch": "Video Search"
+    "youtubeSearch": "Video Search",
+    "throttleError": "Free plan: you can search once every {{days}} day(s).",
+    "cardholderNameLabel":   "Cardholder Name (in English)",
+    "cardholderNamePlaceholder": "e.g. TARO YAMADA",
+    "cardError":             "Card information error",
+    "subscriptionCreationSuccess": "Premium subscription created successfully!",
+    "subscriptionCreationFailed": "Failed to create subscription",
+    "processing":            "Processing…",
+    "subscribeButton":       "Subscribe CA$5/mo",
+     "subscribe": "Subscribe"
 }
+
